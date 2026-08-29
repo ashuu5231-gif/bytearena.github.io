@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Byte Arena — Gaming Cafe & Esports Lounge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Chakra+Petch:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0B0C14; --panel:#12131D; --panel-2:#171826;
+    --violet:#8B5CF6; --cyan:#2DE2E6; --magenta:#FF3D81; --live-green:#39FF88;
+    --text-hi:#F1F1F8; --text-lo:#8C8CA3;
+    --line: rgba(139,92,246,0.25);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Rajdhani', sans-serif; background:var(--void); color:var(--text-hi);
+    font-weight:500; overflow-x:hidden;
+  }
+  h1,h2,h3,h4{font-family:'Chakra Petch', sans-serif; font-weight:700; letter-spacing:0.01em;}
+  .pixel{font-family:'Press Start 2P', monospace;}
+  a{text-decoration:none; color:inherit;}
+  img{max-width:100%; display:block;}
+  button{font-family:'Rajdhani', sans-serif; cursor:pointer; border:none;}
+  ::selection{background:var(--violet); color:var(--void);}
+  .container{max-width:1180px; margin:0 auto; padding:0 32px;}
+  .eyebrow{
+    font-family:'Chakra Petch',sans-serif; font-size:0.72rem; letter-spacing:0.28em; text-transform:uppercase;
+    color:var(--cyan); font-weight:600;
+  }
+  @media(prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+  }
+
+  /* NAV */
+  #nav{
+    position:fixed; top:0; left:0; right:0; z-index:600;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 40px; transition:all .35s ease; background:rgba(11,12,20,0.0);
+    border-bottom:1px solid transparent;
+  }
+  #nav.solid{ background:rgba(11,12,20,0.92); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); padding:14px 40px; }
+  .logo{display:flex; align-items:center; gap:10px;}
+  .logo .mark{
+    width:34px; height:34px; border:2px solid var(--cyan); display:flex; align-items:center; justify-content:center;
+    font-family:'Press Start 2P'; font-size:0.65rem; color:var(--cyan); transform:rotate(45deg);
+  }
+  .logo .mark span{transform:rotate(-45deg);}
+  .logo .word{font-family:'Chakra Petch'; font-weight:700; font-size:1.2rem; letter-spacing:0.06em; color:var(--text-hi);}
+  .logo .word em{font-style:normal; color:var(--violet);}
+  .nav-links{display:flex; gap:30px;}
+  .nav-links a{
+    font-family:'Chakra Petch'; font-size:0.8rem; letter-spacing:0.05em; text-transform:uppercase;
+    color:var(--text-lo); position:relative; padding-bottom:4px; transition:color .2s;
+  }
+  .nav-links a::after{content:''; position:absolute; left:0; bottom:0; width:0; height:2px; background:var(--cyan); transition:width .25s ease;}
+  .nav-links a:hover{color:var(--text-hi);}
+  .nav-links a:hover::after{width:100%;}
+  .btn{
+    display:inline-block; padding:13px 28px; font-family:'Chakra Petch'; font-size:0.78rem; font-weight:600;
+    letter-spacing:0.08em; text-transform:uppercase; border:1.5px solid var(--violet); color:var(--text-hi);
+    background:transparent; transition:all .25s ease; position:relative;
+  }
+  .btn:hover{background:var(--violet); box-shadow:0 0 24px rgba(139,92,246,0.6);}
+  .btn.solid{
+    background:linear-gradient(90deg, var(--violet), var(--cyan)); border:none; color:var(--void); font-weight:700;
+    animation:glowPulse 2.6s ease-in-out infinite;
+  }
+  .btn.solid:hover{filter:brightness(1.15);}
+  .btn.small{padding:9px 18px; font-size:0.68rem;}
+  .btn.magenta{border-color:var(--magenta);}
+  .btn.magenta:hover{background:var(--magenta); box-shadow:0 0 24px rgba(255,61,129,0.55);}
+  @keyframes glowPulse{
+    0%,100%{box-shadow:0 0 10px rgba(139,92,246,0.5), 0 0 2px rgba(45,226,230,0.4);}
+    50%{box-shadow:0 0 26px rgba(45,226,230,0.7), 0 0 8px rgba(139,92,246,0.6);}
+  }
+
+  /* HERO — photo slideshow, bold display type (Next Level Gaming reference) */
+  .hero{
+    position:relative; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+    text-align:center; padding:140px 24px 90px; overflow:hidden;
+  }
+  .hero-slides{position:absolute; inset:0; z-index:0;}
+  .hero-slide{
+    position:absolute; inset:0; background-size:cover; background-position:center;
+    opacity:0; transition:opacity 1.6s ease;
+  }
+  .hero-slide.active{opacity:1;}
+  .hero-slides::after{
+    content:''; position:absolute; inset:0; z-index:1;
+    background:
+      linear-gradient(180deg, rgba(7,7,12,0.55) 0%, rgba(7,7,12,0.35) 35%, rgba(7,7,12,0.92) 92%),
+      linear-gradient(90deg, rgba(7,7,12,0.75) 0%, transparent 30%, transparent 70%, rgba(7,7,12,0.75) 100%);
+  }
+  #particle-canvas{position:absolute; inset:0; z-index:2; opacity:0.5; mix-blend-mode:screen;}
+  .hero-content{position:relative; z-index:3; max-width:900px;}
+  .hero-content .eyebrow{display:inline-block; margin-bottom:14px; opacity:0; animation:heroRise .8s ease forwards; animation-delay:.1s;}
+  .hero-content h1{
+    font-family:'Chakra Petch'; font-weight:700; font-size:clamp(3rem,9vw,6.4rem); line-height:0.98;
+    letter-spacing:-0.01em; text-transform:uppercase; color:var(--text-hi);
+    opacity:0; animation:heroRise .8s ease forwards; animation-delay:.28s;
+  }
+  .hero-content h1 .out{-webkit-text-stroke:2px var(--text-hi); color:transparent; display:block;}
+  .hero-content h1 .hl{
+    display:block; min-width:1ch;
+    background:linear-gradient(90deg, var(--violet), var(--cyan)); -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hero-content h1 .hl.flip{animation:wordFlip .5s ease;}
+  @keyframes wordFlip{
+    0%{ opacity:0; transform:translateY(14px) rotateX(60deg); filter:blur(4px); }
+    100%{ opacity:1; transform:translateY(0) rotateX(0); filter:blur(0); }
+  }
+  .hero-content p{
+    font-size:1.15rem; color:var(--text-lo); max-width:560px; margin:24px auto 30px; line-height:1.7;
+    opacity:0; animation:heroRise .8s ease forwards; animation-delay:.5s;
+  }
+  .hero-ctas{display:flex; gap:16px; justify-content:center; flex-wrap:wrap; opacity:0; animation:heroRise .8s ease forwards; animation-delay:.7s;}
+  @keyframes heroRise{to{opacity:1; transform:translateY(0);} from{transform:translateY(20px);}}
+  .press-start{
+    margin-top:40px; font-family:'Chakra Petch'; font-weight:600; font-size:0.7rem; letter-spacing:0.2em; color:var(--cyan);
+    opacity:0; animation:heroRise .8s ease forwards; animation-delay:.85s;
+  }
+  .slide-dots{position:absolute; bottom:26px; left:50%; transform:translateX(-50%); z-index:4; display:flex; gap:8px;}
+  .slide-dots .dot{width:26px; height:3px; background:rgba(255,255,255,0.25); cursor:pointer; transition:background .3s;}
+  .slide-dots .dot.active{background:var(--cyan);}
+
+  /* LIVE TICKER (signature element) */
+  .ticker-wrap{
+    position:relative; z-index:3; width:100%; overflow:hidden; background:var(--panel-2);
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:12px 0;
+  }
+  .ticker-track{display:flex; gap:60px; white-space:nowrap; animation:tickerMove 22s linear infinite; width:max-content;}
+  .ticker-item{font-family:'Chakra Petch'; font-size:0.82rem; letter-spacing:0.04em; display:flex; align-items:center; gap:8px; color:var(--text-lo);}
+  .ticker-dot{width:8px; height:8px; border-radius:50%; display:inline-block;}
+  .ticker-dot.live{background:var(--live-green); box-shadow:0 0 8px var(--live-green); animation:dotPulse 1.4s infinite;}
+  .ticker-dot.busy{background:var(--magenta); box-shadow:0 0 8px var(--magenta);}
+  @keyframes dotPulse{50%{opacity:0.35;}}
+  @keyframes tickerMove{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
+
+  /* SECTIONS */
+  section.pad{padding:110px 0;}
+  .section-head{max-width:640px; margin-bottom:54px;}
+  .section-head.center{margin:0 auto 54px; text-align:center;}
+  .section-head h2{font-size:clamp(1.9rem,4vw,2.6rem); color:var(--text-hi); margin-top:12px;}
+  .section-head p.sub{color:var(--text-lo); margin-top:14px; font-size:1.02rem; line-height:1.7;}
+
+  /* VIBE / ABOUT */
+  .vibe-grid{display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:center;}
+  .vibe-grid img{width:100%; height:440px; object-fit:cover; border:1px solid var(--line);}
+  .tip-box{
+    background:var(--panel); border-left:3px solid var(--cyan); padding:16px 20px; margin:26px 0;
+    font-family:'Chakra Petch'; font-size:0.85rem; color:var(--cyan); letter-spacing:0.02em;
+  }
+  .vibe-text p{color:var(--text-lo); line-height:1.85; margin-bottom:16px; font-size:1.02rem;}
+  .stat-row{display:flex; gap:44px; margin-top:32px;}
+  .stat-row .n{font-family:'Chakra Petch'; font-size:2rem; color:var(--violet); font-weight:700;}
+  .stat-row .l{font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-lo); margin-top:2px;}
+
+  /* ZONES (rigs) */
+  .zone-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:22px; perspective:1400px;}
+  .zone-card{
+    background:linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)), var(--panel);
+    backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,0.08); border-radius:3px; overflow:hidden;
+    box-shadow:0 1px 0 rgba(255,255,255,0.06) inset, 0 18px 40px -18px rgba(0,0,0,0.65);
+    transition:box-shadow .3s ease, transform .15s ease-out;
+  }
+  .zone-card:hover{box-shadow:0 30px 60px -20px rgba(0,0,0,0.7), 0 0 40px -10px rgba(45,226,230,0.25);}
+  .zone-card .zimg{height:170px; overflow:hidden; position:relative;}
+  .zone-card .zimg img{width:100%; height:100%; object-fit:cover; transition:transform .5s ease; filter:saturate(1.1) contrast(1.05);}
+  .zone-card:hover .zimg img{transform:scale(1.08);}
+  .zone-card .ztag{position:absolute; top:12px; left:12px; background:var(--void); color:var(--live-green); font-family:'Chakra Petch'; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; padding:5px 10px; border:1px solid var(--live-green);}
+  .zone-card .zbody{padding:20px;}
+  .zone-card h4{font-size:1.15rem; color:var(--text-hi); margin-bottom:8px;}
+  .zone-card ul{list-style:none; margin-bottom:16px;}
+  .zone-card li{font-size:0.82rem; color:var(--text-lo); padding:3px 0; padding-left:14px; position:relative;}
+  .zone-card li::before{content:'▸'; position:absolute; left:0; color:var(--violet);}
+  .zone-card .zfoot{display:flex; justify-content:space-between; align-items:center;}
+  .zone-card .price{font-family:'Chakra Petch'; font-weight:700; font-size:1.25rem; color:var(--cyan);}
+  .zone-card .price span{font-size:0.65rem; font-family:'Rajdhani'; color:var(--text-lo); text-transform:uppercase;}
+
+  /* LOADOUTS (membership) */
+  .loadout-section{background:var(--panel-2);}
+  .loadout-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:26px; perspective:1400px;}
+  .loadout-card{
+    background:linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)), var(--void);
+    backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.09); border-radius:3px;
+    padding:32px 26px; position:relative; transition:box-shadow .3s ease, transform .15s ease-out;
+    box-shadow:0 1px 0 rgba(255,255,255,0.06) inset, 0 18px 40px -18px rgba(0,0,0,0.65);
+  }
+  .loadout-card:hover{box-shadow:0 30px 60px -20px rgba(0,0,0,0.7), 0 0 36px -10px rgba(139,92,246,0.3);}
+  .loadout-card.featured{border-color:rgba(255,61,129,0.35); box-shadow:0 1px 0 rgba(255,255,255,0.06) inset, 0 0 50px -10px rgba(255,61,129,0.2);}
+  .loadout-card .badge-pop{position:absolute; top:-13px; right:24px; background:var(--magenta); color:#fff; font-family:'Chakra Petch'; font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; padding:5px 12px;}
+  .loadout-card h4{font-size:1.3rem; color:var(--text-hi); margin-bottom:6px;}
+  .loadout-card .lprice{font-family:'Chakra Petch'; font-size:2rem; font-weight:700; color:var(--violet); margin:14px 0;}
+  .loadout-card .lprice span{font-size:0.8rem; color:var(--text-lo); font-family:'Rajdhani';}
+  .loadout-card ul{list-style:none; margin-bottom:24px;}
+  .loadout-card li{font-size:0.9rem; color:var(--text-lo); padding:6px 0; padding-left:20px; position:relative;}
+  .loadout-card li::before{content:'✓'; position:absolute; left:0; color:var(--live-green); font-weight:700;}
+
+  /* TOURNAMENT */
+  .tourney-panel{
+    background:linear-gradient(135deg, rgba(139,92,246,0.12), rgba(45,226,230,0.08));
+    border:1px solid var(--line); padding:50px; display:grid; grid-template-columns:1.2fr 1fr; gap:40px; align-items:center;
+  }
+  .tourney-panel h3{font-size:1.8rem; color:var(--text-hi); margin-bottom:12px;}
+  .tourney-panel p{color:var(--text-lo); line-height:1.7; margin-bottom:20px;}
+  .countdown{display:flex; gap:14px;}
+  .cd-box{background:var(--void); border:1px solid var(--cyan); padding:16px 14px; text-align:center; min-width:72px;}
+  .cd-box .num{font-family:'Chakra Petch'; font-size:1.8rem; font-weight:700; color:var(--cyan);}
+  .cd-box .lab{font-size:0.6rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-lo); margin-top:4px;}
+  .prize{font-family:'Chakra Petch'; font-size:1rem; color:var(--live-green); margin-top:18px;}
+
+  /* MENU */
+  .menu-tabs{display:flex; gap:0; justify-content:center; margin-bottom:40px; flex-wrap:wrap; border-bottom:1px solid var(--line);}
+  .menu-tab{padding:14px 26px; font-family:'Chakra Petch'; font-size:0.78rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-lo); border-bottom:2px solid transparent; transition:all .2s; cursor:pointer;}
+  .menu-tab.active{color:var(--cyan); border-color:var(--cyan);}
+  .menu-list{display:grid; grid-template-columns:1fr 1fr; gap:0 50px;}
+  .menu-item{display:flex; justify-content:space-between; gap:16px; padding:16px 0; border-bottom:1px dashed var(--line);}
+  .menu-item .mi-name{font-family:'Chakra Petch'; font-size:1.02rem; color:var(--text-hi);}
+  .menu-item .mi-desc{font-size:0.8rem; color:var(--text-lo); margin-top:2px;}
+  .menu-item .mi-price{font-family:'Chakra Petch'; font-weight:700; font-size:1rem; color:var(--violet); white-space:nowrap;}
+
+  /* GALLERY */
+  .gallery-grid{display:grid; grid-template-columns:repeat(4,1fr); grid-auto-rows:170px; gap:8px;}
+  .gallery-grid .g-item{overflow:hidden; border:1px solid var(--line);}
+  .gallery-grid .g-item img{width:100%; height:100%; object-fit:cover; transition:transform .5s ease, filter .5s ease;}
+  .gallery-grid .g-item:hover img{transform:scale(1.08); filter:saturate(1.3);}
+  .gallery-grid .g1{grid-column:span 2; grid-row:span 2;}
+  .gallery-grid .g4{grid-column:span 2;}
+
+  /* BOOKING */
+  .book-section{background:var(--panel-2);}
+  .book-wrap{display:grid; grid-template-columns:1fr 1fr; gap:50px; align-items:start;}
+  .book-panel{background:var(--void); border:1px solid var(--line); padding:34px;}
+  .field{margin-bottom:18px;}
+  .field label{display:block; font-family:'Chakra Petch'; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-lo); margin-bottom:8px;}
+  .field input, .field select{
+    width:100%; padding:12px 14px; border:1px solid var(--line); background:var(--panel); color:var(--text-hi);
+    font-family:'Rajdhani'; font-size:0.95rem; outline:none; transition:border-color .2s;
+  }
+  .field input:focus, .field select:focus{border-color:var(--cyan);}
+  .row-2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .confirm-ticket{
+    display:none; background:var(--void); border:1px dashed var(--cyan); padding:26px; margin-top:22px;
+    animation:ticketPop .4s ease;
+  }
+  @keyframes ticketPop{from{opacity:0; transform:scale(0.96);} to{opacity:1; transform:scale(1);}}
+  .confirm-ticket .ct-code{font-family:'Press Start 2P'; font-size:0.9rem; color:var(--live-green); margin-bottom:14px; letter-spacing:0.05em;}
+  .confirm-ticket .ct-line{display:flex; justify-content:space-between; font-size:0.88rem; padding:6px 0; border-bottom:1px dashed var(--line); color:var(--text-lo);}
+  .confirm-ticket .ct-line span:last-child{color:var(--text-hi);}
+  .book-info-card{background:var(--void); border:1px solid var(--line); padding:30px;}
+  .book-info-card h4{color:var(--text-hi); font-size:1.2rem; margin-bottom:14px;}
+  .book-info-card p{color:var(--text-lo); font-size:0.92rem; line-height:1.8; margin-bottom:10px;}
+  .msg{font-size:0.82rem; padding:12px 16px; margin-bottom:14px; display:none; font-family:'Chakra Petch';}
+  .msg.error{background:rgba(255,61,129,0.12); color:var(--magenta); display:block; border:1px solid var(--magenta);}
+
+  /* CTA STRIP */
+  .cta-strip{text-align:center; padding:90px 24px; background:linear-gradient(135deg, rgba(139,92,246,0.16), rgba(255,61,129,0.1)); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .cta-strip h2{font-size:clamp(1.7rem,4vw,2.3rem); color:var(--text-hi); margin-bottom:16px;}
+  .cta-strip p{color:var(--text-lo); max-width:520px; margin:0 auto 26px; font-size:0.95rem; line-height:1.7;}
+
+  /* FOOTER */
+  footer{padding:50px 0 26px; text-align:center; border-top:1px solid var(--line);}
+  footer .logo{justify-content:center; margin-bottom:16px;}
+  footer p{color:var(--text-lo); font-size:0.85rem; line-height:1.9;}
+  footer a:hover{color:var(--cyan);}
+  footer .fbottom{margin-top:24px; font-size:0.7rem; color:#54546a;}
+
+  /* REVEAL */
+  .reveal{opacity:0; transform:translateY(30px); transition:opacity .7s ease, transform .7s ease;}
+  .reveal.in-view{opacity:1; transform:translateY(0);}
+
+  @media(max-width:900px){
+    .nav-links{display:none;}
+    .vibe-grid, .book-wrap, .tourney-panel{grid-template-columns:1fr;}
+    .zone-grid{grid-template-columns:1fr 1fr;}
+    .loadout-grid{grid-template-columns:1fr;}
+    .gallery-grid{grid-template-columns:repeat(2,1fr);}
+    .menu-list{grid-template-columns:1fr;}
+  }
+  @media(max-width:560px){
+    .zone-grid{grid-template-columns:1fr;}
+  }
+  /* ===================== 3D / GLASS / CLASSY UPGRADE ===================== */
+  .chrome-text{
+    background:linear-gradient(180deg, #FFFFFF 0%, #C9C9E0 45%, #8B8BA8 55%, #FFFFFF 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 2px 12px rgba(139,92,246,0.35));
+  }
+  .glass{
+    background:linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015));
+    backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,0.09);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.08) inset, 0 30px 60px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(139,92,246,0.06);
+  }
+  .tilt-3d{ perspective:900px; }
+  .tilt-3d .tilt-inner{
+    transform-style:preserve-3d; transition:transform .12s ease-out, box-shadow .3s ease;
+    will-change:transform;
+  }
+  .tilt-3d:hover .tilt-inner{ box-shadow:0 40px 70px -25px rgba(0,0,0,0.7), 0 0 40px -10px rgba(45,226,230,0.25); }
+  .depth-1{ box-shadow:0 1px 0 rgba(255,255,255,0.06) inset, 0 18px 40px -18px rgba(0,0,0,0.65); }
+
+  /* PAYMENT METHODS */
+  .pay-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:18px;}
+  .pay-card{
+    padding:26px 16px; text-align:center; border-radius:2px;
+  }
+  .pay-card svg{width:30px; height:30px; stroke:var(--cyan); margin:0 auto 12px; display:block;}
+  .pay-card .pname{font-family:'Chakra Petch'; font-size:0.82rem; color:var(--text-hi); font-weight:600;}
+  .pay-card .papps{font-size:0.68rem; color:var(--text-lo); margin-top:4px;}
+
+  /* GAMES LIBRARY — custom illustrated icon tiles (Spotify app-icon style) */
+  .games-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:22px 16px; perspective:1400px;}
+  .zone-card, .loadout-card, .game-tile{ transform-style:preserve-3d; will-change:transform; }
+  .game-tile{ text-align:center; cursor:default; }
+  .game-icon{
+    aspect-ratio:1; position:relative; overflow:hidden; border-radius:22%;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid rgba(255,255,255,0.1);
+    box-shadow:0 1px 0 rgba(255,255,255,0.12) inset, 0 16px 34px -16px rgba(0,0,0,0.7);
+    transition:transform .3s cubic-bezier(.22,.61,.36,1), box-shadow .3s ease;
+  }
+  .game-icon:hover{
+    transform:translateY(-6px) scale(1.05);
+    box-shadow:0 24px 46px -16px rgba(0,0,0,0.75), 0 0 30px -8px var(--icon-glow, rgba(139,92,246,0.5));
+  }
+  .game-icon svg{ transition:transform .3s ease; }
+  .game-icon:hover svg{ transform:scale(1.1); }
+  .game-icon .pattern{position:absolute; inset:0; opacity:0.5;}
+  .game-icon svg{width:42%; height:42%; position:relative; z-index:2; stroke:rgba(255,255,255,0.95); fill:none; stroke-width:1.6; filter:drop-shadow(0 3px 6px rgba(0,0,0,0.35));}
+  .game-tile .gname{margin-top:10px; font-family:'Chakra Petch'; font-weight:600; font-size:0.82rem; color:var(--text-hi); line-height:1.3;}
+  .game-tile .gtag{font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-lo); margin-top:2px; display:block;}
+
+  @media(max-width:900px){
+    .pay-grid{grid-template-columns:repeat(2,1fr);}
+    .games-grid{grid-template-columns:repeat(3,1fr);}
+  }
+  @media(max-width:560px){
+    .games-grid{grid-template-columns:repeat(2,1fr);}
+  }
+
+  /* ===================== TOUCH / MOBILE ANIMATIONS ===================== */
+  /* On touch devices there is no hover, so hover-only effects never play.
+     These give a tap/press animation instead, and a gentle idle motion
+     so cards still feel alive without needing a mouse. */
+  @media (hover: none){
+    .zone-card, .loadout-card{ transition:box-shadow .3s ease, transform .18s ease-out; }
+    .zone-card:active, .loadout-card:active{
+      transform:scale(0.97);
+      box-shadow:0 14px 30px -14px rgba(0,0,0,0.7), 0 0 26px -8px rgba(45,226,230,0.3);
+    }
+    .game-icon:active{ transform:scale(0.92); }
+    .game-icon{ animation:idleFloat 3.2s ease-in-out infinite; animation-delay:calc(var(--i, 0) * 0.15s); }
+    @keyframes idleFloat{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-4px); } }
+    .btn.solid{ animation:glowPulse 2.2s ease-in-out infinite; }
+    .zone-card .zimg img, .game-icon svg{ transition:transform .35s ease; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .game-icon{ animation:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="logo">
+    <span class="mark"><span>B</span></span>
+    <span class="word">BYTE <em>ARENA</em></span>
+  </a>
+  <div class="nav-links">
+    <a href="#vibe">The Cafe</a>
+    <a href="#zones">Rigs</a>
+    <a href="#games">Games</a>
+    <a href="#loadouts">Loadouts</a>
+    <a href="#tourney">Tournaments</a>
+    <a href="#menu">Menu</a>
+  </div>
+  <a href="#book" class="btn small solid">Reserve a Rig</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-slides" id="hero-slides"></div>
+  <canvas id="particle-canvas"></canvas>
+  <div class="hero-content">
+    <span class="eyebrow">Indore's Premium Gaming Lounge</span>
+    <h1><span class="out">GAMING</span><span class="hl" id="flip-word">ARENA.</span></h1>
+    <p>High-refresh rigs, VR pods aur console zones — book karo seconds mein, aake seedha bas <em style="color:var(--cyan); font-style:normal;">"GG"</em> bolo. No queue, no wait, sirf non-stop respawns. 🎮</p>
+    <div class="hero-ctas">
+      <a href="#book" class="btn solid">Reserve Your Rig</a>
+      <a href="#zones" class="btn">See The Zones</a>
+    </div>
+    <div class="press-start">▼ SCROLL TO EXPLORE ▼</div>
+  </div>
+  <div class="slide-dots" id="slide-dots"></div>
+</section>
+
+<!-- LIVE TICKER (signature element) -->
+<div class="ticker-wrap">
+  <div class="ticker-track" id="ticker-track"></div>
+</div>
+
+<!-- VIBE -->
+<section class="pad" id="vibe">
+  <div class="container vibe-grid">
+    <div class="reveal">
+      <img src="https://images.unsplash.com/photo-1593305841991-05c297ba4575?auto=format&fit=crop&w=900&q=80" alt="Byte Arena setup">
+    </div>
+    <div class="vibe-text reveal">
+      <span class="eyebrow">The Cafe</span>
+      <h2 class="chrome-text">Built By Gamers, For Gamers</h2>
+      <p>Byte Arena isn't a cyber cafe with a few PCs bolted on — it's a lounge built around latency, comfort, and squad energy. Every rig is tuned for competitive play, every chair is built for a 6-hour raid.</p>
+      <div class="tip-box pixel" style="font-size:0.68rem; line-height:1.8;">TIP: Book ahead on weekends — Standard Zone fills up fast after 6 PM.</div>
+      <p>Whether you're grinding ranked solo, running a 5-stack scrim, or just want to feel a VR headset on your face for the first time — we've got a seat for you.</p>
+      <div class="stat-row">
+        <div><div class="n">24</div><div class="l">Gaming Rigs</div></div>
+        <div><div class="n">4</div><div class="l">Zone Types</div></div>
+        <div><div class="n">120+</div><div class="l">Weekly Regulars</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ZONES -->
+<section class="pad" id="zones" style="padding-top:0;">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Choose Your Rig</span>
+      <h2 class="chrome-text">Gaming Zones</h2>
+      <p class="sub">Four setups, one goal — zero lag between you and the win.</p>
+    </div>
+    <div class="zone-grid" id="zone-grid"></div>
+  </div>
+</section>
+
+<!-- LOADOUTS -->
+<section class="pad loadout-section" id="loadouts">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Membership</span>
+      <h2 class="chrome-text">Pick Your Loadout</h2>
+      <p class="sub">Monthly hour bundles — the more you commit, the more you save.</p>
+    </div>
+    <div class="loadout-grid" id="loadout-grid"></div>
+  </div>
+</section>
+
+<!-- TOURNAMENT -->
+<section class="pad" id="tourney">
+  <div class="container">
+    <div class="tourney-panel glass depth-1 reveal">
+      <div>
+        <span class="eyebrow">This Week</span>
+        <h3>BGMI Squad Showdown</h3>
+        <p>4v4 squads, single elimination, LAN-only. Winners take the prize pool and a free month of Elite Squad membership.</p>
+        <a href="#book" class="btn magenta small">Register Your Squad</a>
+        <div class="prize pixel" style="font-size:0.7rem;">PRIZE POOL: ₹15,000</div>
+      </div>
+      <div class="countdown" id="countdown"></div>
+    </div>
+  </div>
+</section>
+
+<!-- MENU -->
+<section class="pad" id="menu">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Refuel Station</span>
+      <h2 class="chrome-text">Snacks &amp; Drinks</h2>
+    </div>
+    <div class="menu-tabs" id="menu-tabs"></div>
+    <div class="menu-list" id="menu-list"></div>
+  </div>
+</section>
+
+<!-- GAMES LIBRARY -->
+<section class="pad" id="games" style="padding-top:0;">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">50+ Titles, Always Updated</span>
+      <h2 class="chrome-text">The Games Library</h2>
+      <p class="sub">Competitive shooters, open-world epics, and everything your squad's arguing about.</p>
+    </div>
+    <div class="games-grid" id="games-grid"></div>
+  </div>
+</section>
+
+<!-- PAYMENT METHODS -->
+<section class="pad" id="payments" style="padding-top:0;">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Pay However You Like</span>
+      <h2 class="chrome-text">Payment Methods</h2>
+    </div>
+    <div class="pay-grid glass depth-1" style="padding:30px 10px; border-radius:4px;" id="pay-grid"></div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="pad" style="padding-top:0;">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Inside The Arena</span>
+      <h2 class="chrome-text">Gallery</h2>
+    </div>
+    <div class="gallery-grid">
+      <div class="g-item g1"><img src="https://images.unsplash.com/photo-1580327344181-c1163234e5a0?auto=format&fit=crop&w=900&q=80"></div>
+      <div class="g-item"><img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=500&q=80"></div>
+      <div class="g-item"><img src="https://images.unsplash.com/photo-1607853202273-797f1c22a38e?auto=format&fit=crop&w=500&q=80"></div>
+      <div class="g-item g4"><img src="https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?auto=format&fit=crop&w=900&q=80"></div>
+      <div class="g-item"><img src="https://images.unsplash.com/photo-1633545495060-e737edcc1bd9?auto=format&fit=crop&w=500&q=80"></div>
+      <div class="g-item"><img src="https://images.unsplash.com/photo-1560253023-3ec5d502959f?auto=format&fit=crop&w=500&q=80"></div>
+    </div>
+  </div>
+</section>
+
+<!-- BOOKING -->
+<section class="pad book-section" id="book">
+  <div class="container">
+    <div class="section-head center reveal">
+      <span class="eyebrow">Skip The Queue</span>
+      <h2 class="chrome-text">Reserve Your Rig</h2>
+    </div>
+    <div class="book-wrap">
+      <div class="book-panel glass depth-1 reveal">
+        <div id="book-msg" class="msg"></div>
+        <div class="row-2">
+          <div class="field"><label>Name</label><input id="b-name" type="text" placeholder="Your name"></div>
+          <div class="field"><label>Phone</label><input id="b-phone" type="tel" placeholder="+91 XXXXX XXXXX"></div>
+        </div>
+        <div class="row-2">
+          <div class="field"><label>Date</label><input id="b-date" type="date"></div>
+          <div class="field">
+            <label>Time Slot</label>
+            <select id="b-time"><option>4:00 PM</option><option>6:00 PM</option><option>8:00 PM</option><option>10:00 PM</option></select>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>Zone</label>
+            <select id="b-zone"></select>
+          </div>
+          <div class="field">
+            <label>Duration</label>
+            <select id="b-duration"><option value="1">1 Hour</option><option value="2" selected>2 Hours</option><option value="3">3 Hours</option><option value="5">5 Hours</option></select>
+          </div>
+        </div>
+        <button class="btn solid" style="width:100%; text-align:center;" onclick="confirmBooking()">Confirm Reservation</button>
+        <div class="confirm-ticket" id="confirm-ticket"></div>
+      </div>
+      <div class="book-info-card glass depth-1 reveal">
+        <h4>How It Works</h4>
+        <p>▸ Pick your zone, date and time slot — your rig is held for you.</p>
+        <p>▸ Show up, give your booking code at the counter, and you're straight in.</p>
+        <p>▸ Running late? Slots are held for 15 minutes past your start time.</p>
+        <p style="margin-top:20px; color:var(--cyan);">This is a demo booking flow — no real reservation is made yet.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-strip">
+  <span class="eyebrow">Level Up Your Downtime</span>
+  <h2 class="chrome-text">Your Squad Is Waiting</h2>
+  <p>Walk-ins welcome, but reserved rigs never wait in line.</p>
+  <a href="#book" class="btn solid">Reserve a Rig Now</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <a href="#" class="logo">
+      <span class="mark"><span>B</span></span>
+      <span class="word">BYTE <em>ARENA</em></span>
+    </a>
+    <p>Gaming Cafe &amp; Esports Lounge, Indore, Madhya Pradesh<br>
+    <a href="https://wa.me/917999139579" target="_blank">+91 79991 39579</a> · <a href="mailto:ashuu5231@gmail.com">ashuu5231@gmail.com</a></p>
+    <div class="fbottom pixel" style="font-size:0.58rem; line-height:2;">© 2026 BYTE ARENA — DESIGN PREVIEW BUILD</div>
+  </div>
+</footer>
+
+<script>
+/* ===================== DATA ===================== */
+const ZONES = [
+  {id:'standard', name:'Standard Zone', price:60, specs:['i5, GTX 1660','144Hz Monitor','Wired Headset'], img:'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80', status:'12 Seats Live'},
+  {id:'pro', name:'Pro Gaming Rig', price:100, specs:['i7, RTX 4060','240Hz Monitor','Wireless Mechanical KB'], img:'https://images.unsplash.com/photo-1593305841991-05c297ba4575?auto=format&fit=crop&w=600&q=80', status:'6 Rigs Live'},
+  {id:'vr', name:'VR Zone', price:150, specs:['Meta Quest 3','Full Room-Scale','20+ Titles'], img:'https://images.unsplash.com/photo-1622979909942-72c1c3d19f1e?auto=format&fit=crop&w=600&q=80', status:'3 Pods Live'},
+  {id:'ps5', name:'PS5 Console Zone', price:120, specs:['4K 65\\" Display','2 Controllers','50+ Titles'], img:'https://images.unsplash.com/photo-1607853202273-797f1c22a38e?auto=format&fit=crop&w=600&q=80', status:'3 Consoles Live'}
+];
+const LOADOUTS = [
+  {name:'Casual Gamer', price:500, hours:'10 hrs / month', perks:['Standard Zone access','Save 15% vs walk-in','Valid 30 days']},
+  {name:'Pro Gamer', price:1100, hours:'25 hrs / month', perks:['Pro Rig access','Save 25% vs walk-in','1 free tournament entry'], featured:true},
+  {name:'Elite Squad', price:2500, hours:'Unlimited', perks:['All zones incl. VR & PS5','Priority booking','VIP lounge access']}
+];
+const MENU = {
+  Snacks:[
+    {name:'Peri Peri Fries', desc:'Crispy fries tossed in peri peri masala', price:'₹120'},
+    {name:'Loaded Nachos', desc:'Cheese, jalapeños, salsa', price:'₹180'},
+    {name:'Cheesy Maggi', desc:'Classic gamer fuel, extra cheese', price:'₹90'},
+    {name:'Chicken Popcorn', desc:'Crispy bite-sized fried chicken', price:'₹160'}
+  ],
+  Drinks:[
+    {name:'Energy Drink', desc:'Chilled, ready to grab', price:'₹110'},
+    {name:'Cold Coffee', desc:'Blended with ice cream', price:'₹90'},
+    {name:'Blue Lagoon Mocktail', desc:'Our signature gamer mocktail', price:'₹140'},
+    {name:'Masala Chai', desc:'For the late-night grind', price:'₹40'}
+  ],
+  Combos:[
+    {name:'Solo Grind Combo', desc:'Fries + Energy Drink', price:'₹200'},
+    {name:'Duo Combo', desc:'Nachos + 2 Cold Coffees', price:'₹320'},
+    {name:'Squad Combo (4)', desc:'Popcorn + Maggi x2 + 4 Drinks', price:'₹750'}
+  ]
+};
+
+const GAMES = [
+  {name:'Valorant', tag:'FPS', g:['#8B5CF6','#FF3D81'], icon:'<circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>'},
+  {name:'BGMI', tag:'Battle Royale', g:['#2DE2E6','#12314f'], icon:'<path d="M12 2l8 3.2v6c0 5-3.4 8.4-8 10.8-4.6-2.4-8-5.8-8-10.8v-6z"/>'},
+  {name:'Call of Duty: Warzone', tag:'FPS', g:['#39FF88','#123320'], icon:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>'},
+  {name:'FIFA / EA FC 26', tag:'Sports', g:['#2DE2E6','#8B5CF6'], icon:'<circle cx="12" cy="12" r="8"/><path d="M12 7l3.4 2.4-1.3 4H9.9l-1.3-4z"/><path d="M12 4.4v2.6M6.2 8.6L4.4 7.4M6.7 15.8l-1.8 1M17.8 8.6l1.8-1.2M17.3 15.8l1.8 1M9.2 19.4l.9-2.2M14.8 19.4l-.9-2.2"/>'},
+  {name:'GTA V', tag:'Open World', g:['#FF3D81','#3a1030'], icon:'<path d="M4 16l1.3-4.6A2 2 0 017.2 10h9.6a2 2 0 011.9 1.4L20 16"/><rect x="2.5" y="16" width="19" height="4.4" rx="1.4"/><circle cx="7.2" cy="20.4" r="1.4"/><circle cx="16.8" cy="20.4" r="1.4"/>'},
+  {name:'Counter-Strike 2', tag:'FPS', g:['#FFB020','#3a2a08'], icon:'<circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="1.4"/>'},
+  {name:'Apex Legends', tag:'Battle Royale', g:['#FF3D81','#FFB020'], icon:'<path d="M12 2.5l2.9 6 6.6.6-5 4.4 1.5 6.5L12 16.7l-5.9 3.3 1.5-6.5-5-4.4 6.6-.6z"/>'},
+  {name:'Fortnite', tag:'Battle Royale', g:['#2DE2E6','#39FF88'], icon:'<path d="M4 21V9l4-3.2 4 3.2 4-3.2 4 3.2v12"/><path d="M4 21h16M8 21v-5h3v5M13 21v-5h3v5"/>'},
+  {name:'Mortal Kombat 1', tag:'Fighting', g:['#FF3D81','#2a0f1f'], icon:'<path d="M8 12.5V8a2 2 0 014 0M12 8a2 2 0 014 0v4.5M16 8a2 2 0 014 0v6a6 6 0 01-6 6h-1a6 6 0 01-6-6v-1.5a2 2 0 014 0"/>'},
+  {name:'God of War Ragnarök', tag:'Action RPG', g:['#8B5CF6','#1b1030'], icon:'<path d="M4.5 19.5L14 10M14.5 3.5l6 6-4.2 1.2-3-3z"/>'},
+  {name:"Spider-Man 2", tag:'Action', g:['#FF3D81','#2DE2E6'], icon:'<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/><circle cx="12" cy="12" r="4.5"/>'},
+  {name:'Elden Ring', tag:'RPG', g:['#FFB020','#8B5CF6'], icon:'<circle cx="9.5" cy="9.5" r="5"/><path d="M13.8 13.8l6 6M17 11l4 4-2 2-4-4z"/>'}
+];
+
+const PAYMENT_METHODS = [
+  {name:'UPI', apps:'GPay · PhonePe · Paytm', icon:'<path d="M4 12h16M4 6h10M4 18h10"/><circle cx="19" cy="18" r="2"/>'},
+  {name:'Debit / Credit Card', apps:'Visa · Mastercard · RuPay', icon:'<rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M3 10h18"/>'},
+  {name:'Cash', apps:'At the counter', icon:'<rect x="3" y="7" width="18" height="10" rx="1.5"/><circle cx="12" cy="12" r="2.4"/>'},
+  {name:'Net Banking', apps:'All major banks', icon:'<path d="M4 21h16M5 21V10l7-5 7 5v11M9 21v-6h6v6"/>'},
+  {name:'Wallets', apps:'Amazon Pay · Mobikwik', icon:'<rect x="3" y="6" width="18" height="13" rx="1.5"/><path d="M16 12.5h2.5"/>'}
+];
+
+/* ===================== RENDER: GAMES (custom illustrated icon tiles) ===================== */
+document.getElementById('games-grid').innerHTML = GAMES.map((g,i) => `
+  <div class="game-tile reveal">
+    <div class="game-icon" style="background:linear-gradient(155deg, ${g.g[0]}, ${g.g[1]}); --icon-glow:${g.g[0]}88; --i:${i};">
+      <div class="pattern" style="background:radial-gradient(circle at 25% 20%, rgba(255,255,255,0.28), transparent 55%), radial-gradient(circle at 85% 90%, rgba(0,0,0,0.35), transparent 60%);"></div>
+      <svg viewBox="0 0 24 24">${g.icon}</svg>
+    </div>
+    <div class="gname">${g.name}</div>
+    <span class="gtag">${g.tag}</span>
+  </div>`).join('');
+
+/* ===================== RENDER: PAYMENT METHODS ===================== */
+document.getElementById('pay-grid').innerHTML = PAYMENT_METHODS.map(p => `
+  <div class="pay-card">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.4">${p.icon}</svg>
+    <div class="pname">${p.name}</div>
+    <div class="papps">${p.apps}</div>
+  </div>`).join('');
+
+/* ===================== 3D TILT INTERACTION ===================== */
+function attachTilt(selector, maxTilt){
+  // Skip mouse-tracking tilt entirely on touch devices — there's no cursor to
+  // track, and it avoids wasted listeners/jank on mobile.
+  if(window.matchMedia('(hover: none)').matches) return;
+  document.querySelectorAll(selector).forEach(card=>{
+    card.addEventListener('mousemove', (e)=>{
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left)/r.width - 0.5;
+      const y = (e.clientY - r.top)/r.height - 0.5;
+      card.style.transform = `perspective(900px) rotateY(${x*maxTilt}deg) rotateX(${-y*maxTilt}deg) translateY(-6px) scale(1.02)`;
+    });
+    card.addEventListener('mouseleave', ()=>{
+      card.style.transform = 'perspective(900px) rotateY(0) rotateX(0) translateY(0) scale(1)';
+    });
+  });
+}
+attachTilt('.zone-card', 8);
+attachTilt('.loadout-card', 6);
+/* game-icon now uses a simple CSS hover animation instead of JS mouse-tracking tilt
+   (the tilt was updating transform on every mousemove without smoothing, which
+   caused a visible vibration/jitter on the small icon tiles). */
+
+/* ===================== HERO PHOTO SLIDESHOW (Next Level style) ===================== */
+const HERO_PHOTOS = [
+  'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1800&q=80',
+  'https://images.unsplash.com/photo-1580327344181-c1163234e5a0?auto=format&fit=crop&w=1800&q=80',
+  'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?auto=format&fit=crop&w=1800&q=80',
+  'https://images.unsplash.com/photo-1560253023-3ec5d502959f?auto=format&fit=crop&w=1800&q=80'
+];
+const slidesWrap = document.getElementById('hero-slides');
+const dotsWrap = document.getElementById('slide-dots');
+slidesWrap.innerHTML = HERO_PHOTOS.map((url,i)=>`<div class="hero-slide ${i===0?'active':''}" style="background-image:url('${url}')"></div>`).join('');
+dotsWrap.innerHTML = HERO_PHOTOS.map((_,i)=>`<span class="dot ${i===0?'active':''}" data-i="${i}"></span>`).join('');
+let heroSlideIdx = 0;
+function showHeroSlide(i){
+  document.querySelectorAll('.hero-slide').forEach((el,idx)=>el.classList.toggle('active', idx===i));
+  document.querySelectorAll('.slide-dots .dot').forEach((el,idx)=>el.classList.toggle('active', idx===i));
+  heroSlideIdx = i;
+}
+document.querySelectorAll('.slide-dots .dot').forEach(dot=>{
+  dot.addEventListener('click', ()=> showHeroSlide(parseInt(dot.dataset.i)));
+});
+setInterval(()=> showHeroSlide((heroSlideIdx+1) % HERO_PHOTOS.length), 4500);
+
+/* ===================== HERO WORD FLIP (fun/playful headline) ===================== */
+const FLIP_WORDS = ['ARENA.', 'ZONE.', 'LOUNGE.', 'GG\u2019S.', 'RESPAWN.', 'BASE.'];
+let flipIdx = 0;
+const flipEl = document.getElementById('flip-word');
+function cycleFlipWord(){
+  flipIdx = (flipIdx + 1) % FLIP_WORDS.length;
+  flipEl.classList.remove('flip');
+  void flipEl.offsetWidth;
+  flipEl.textContent = FLIP_WORDS[flipIdx];
+  flipEl.classList.add('flip');
+}
+if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+  setInterval(cycleFlipWord, 2200);
+}
+
+/* ===================== HERO PARTICLE BACKGROUND (canvas — GIF-like living bg) ===================== */
+(function initParticles(){
+  const canvas = document.getElementById('particle-canvas');
+  const hero = document.querySelector('.hero');
+  const ctx = canvas.getContext('2d');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W, H, particles = [];
+  const COLORS = ['139,92,246', '45,226,230', '255,61,129', '57,255,136'];
+
+  function resize(){
+    W = canvas.width = hero.offsetWidth;
+    H = canvas.height = hero.offsetHeight;
+  }
+  function makeParticle(){
+    const size = Math.random()*2.6 + 1;
+    return {
+      x: Math.random()*W,
+      y: H + Math.random()*80,
+      r: size,
+      speed: Math.random()*0.6 + 0.25,
+      drift: (Math.random()-0.5)*0.4,
+      color: COLORS[Math.floor(Math.random()*COLORS.length)],
+      alpha: Math.random()*0.5 + 0.3,
+      twinkle: Math.random()*Math.PI*2
+    };
+  }
+  function init(){
+    resize();
+    const count = Math.min(70, Math.floor((W*H)/16000));
+    particles = Array.from({length: count}, makeParticle);
+  }
+  function tick(){
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>{
+      p.y -= p.speed;
+      p.x += p.drift;
+      p.twinkle += 0.05;
+      if(p.y < -10){ Object.assign(p, makeParticle(), {y: H + 10}); }
+      const a = p.alpha * (0.6 + 0.4*Math.sin(p.twinkle));
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${p.color},${a})`;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = `rgba(${p.color},0.9)`;
+      ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  window.addEventListener('resize', resize);
+  init();
+  if(!reduceMotion){ tick(); } else { ctx.clearRect(0,0,W,H); }
+})();
+
+/* ===================== RENDER: ZONES ===================== */
+const zoneGrid = document.getElementById('zone-grid');
+zoneGrid.innerHTML = ZONES.map(z => `
+  <div class="zone-card reveal">
+    <div class="zimg">
+      <img src="${z.img}" alt="${z.name}" onerror="this.onerror=null; this.parentElement.style.background='linear-gradient(155deg, var(--violet), var(--panel-2))'; this.style.display='none';">
+      <span class="ztag">${z.status}</span>
+    </div>
+    <div class="zbody">
+      <h4>${z.name}</h4>
+      <ul>${z.specs.map(s=>`<li>${s}</li>`).join('')}</ul>
+      <div class="zfoot">
+        <div class="price">₹${z.price}<span> /hr</span></div>
+        <a href="#book" class="btn small" onclick="preselectZone('${z.id}')">Reserve</a>
+      </div>
+    </div>
+  </div>`).join('');
+
+document.getElementById('b-zone').innerHTML = ZONES.map(z=>`<option value="${z.id}">${z.name} — ₹${z.price}/hr</option>`).join('');
+function preselectZone(id){ document.getElementById('b-zone').value = id; }
+
+/* ===================== RENDER: LOADOUTS ===================== */
+document.getElementById('loadout-grid').innerHTML = LOADOUTS.map(l => `
+  <div class="loadout-card reveal ${l.featured?'featured':''}">
+    ${l.featured?'<span class="badge-pop">Most Popular</span>':''}
+    <h4>${l.name}</h4>
+    <div class="lprice">₹${l.price}<span> / month</span></div>
+    <div class="eyebrow" style="color:var(--text-lo); font-size:0.7rem;">${l.hours}</div>
+    <ul style="margin-top:18px;">${l.perks.map(p=>`<li>${p}</li>`).join('')}</ul>
+    <a href="#book" class="btn ${l.featured?'magenta':''} small" style="width:100%; text-align:center;">Choose Loadout</a>
+  </div>`).join('');
+
+/* ===================== RENDER: TICKER ===================== */
+const tickerItems = ZONES.map(z => `<span class="ticker-item"><span class="ticker-dot live"></span>${z.name.toUpperCase()} — ${z.status.toUpperCase()}</span>`);
+tickerItems.push(`<span class="ticker-item"><span class="ticker-dot busy"></span>PRO RIG #3 — IN USE</span>`);
+tickerItems.push(`<span class="ticker-item"><span class="ticker-dot live"></span>NEXT TOURNAMENT: BGMI SQUAD SHOWDOWN</span>`);
+document.getElementById('ticker-track').innerHTML = tickerItems.join('') + tickerItems.join('');
+
+/* ===================== RENDER: MENU ===================== */
+function renderMenu(activeCat){
+  const cats = Object.keys(MENU);
+  document.getElementById('menu-tabs').innerHTML = cats.map(c=>
+    `<div class="menu-tab ${c===activeCat?'active':''}" onclick="renderMenu('${c}')">${c}</div>`).join('');
+  document.getElementById('menu-list').innerHTML = MENU[activeCat].map(item=>`
+    <div class="menu-item">
+      <div><div class="mi-name">${item.name}</div><div class="mi-desc">${item.desc}</div></div>
+      <div class="mi-price">${item.price}</div>
+    </div>`).join('');
+}
+renderMenu('Snacks');
+
+/* ===================== COUNTDOWN ===================== */
+function pad(n){ return n.toString().padStart(2,'0'); }
+function updateCountdown(){
+  const now = new Date();
+  const target = new Date();
+  target.setDate(now.getDate() + ((6 - now.getDay() + 7) % 7 || 7)); // next Saturday
+  target.setHours(18,0,0,0);
+  let diff = Math.max(0, target - now);
+  const d = Math.floor(diff/86400000);
+  const h = Math.floor((diff%86400000)/3600000);
+  const m = Math.floor((diff%3600000)/60000);
+  const s = Math.floor((diff%60000)/1000);
+  document.getElementById('countdown').innerHTML = `
+    <div class="cd-box"><div class="num">${pad(d)}</div><div class="lab">Days</div></div>
+    <div class="cd-box"><div class="num">${pad(h)}</div><div class="lab">Hrs</div></div>
+    <div class="cd-box"><div class="num">${pad(m)}</div><div class="lab">Min</div></div>
+    <div class="cd-box"><div class="num">${pad(s)}</div><div class="lab">Sec</div></div>`;
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+/* ===================== BOOKING (demo — no backend) ===================== */
+function showMsg(text){
+  const el = document.getElementById('book-msg');
+  el.textContent = text; el.className = 'msg error';
+}
+function confirmBooking(){
+  const name = document.getElementById('b-name').value.trim();
+  const phone = document.getElementById('b-phone').value.trim();
+  const date = document.getElementById('b-date').value;
+  const time = document.getElementById('b-time').value;
+  const zoneId = document.getElementById('b-zone').value;
+  const duration = document.getElementById('b-duration').value;
+  if(!name || !phone || !date){
+    showMsg('Please fill in your name, phone and date to continue.');
+    return;
+  }
+  document.getElementById('book-msg').className = 'msg';
+  const zone = ZONES.find(z=>z.id===zoneId);
+  const total = zone.price * duration;
+  const code = 'BA'+Date.now().toString().slice(-6);
+  const ticket = document.getElementById('confirm-ticket');
+  ticket.style.display = 'block';
+  ticket.innerHTML = `
+    <div class="ct-code">CODE: ${code}</div>
+    <div class="ct-line"><span>Player</span><span>${name}</span></div>
+    <div class="ct-line"><span>Zone</span><span>${zone.name}</span></div>
+    <div class="ct-line"><span>Date</span><span>${date}</span></div>
+    <div class="ct-line"><span>Time</span><span>${time}</span></div>
+    <div class="ct-line"><span>Duration</span><span>${duration} hr(s)</span></div>
+    <div class="ct-line"><span>Est. Total</span><span>₹${total}</span></div>
+    <a href="https://wa.me/917999139579?text=${encodeURIComponent('Hi Byte Arena, confirming my rig reservation.\nCode: '+code+'\nName: '+name+'\nZone: '+zone.name+'\nDate: '+date+' at '+time+'\nDuration: '+duration+' hr(s)')}"
+       target="_blank" class="btn small solid" style="margin-top:16px; width:100%; text-align:center;">Send to Byte Arena on WhatsApp</a>`;
+  ticket.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+/* ===================== NAV SOLID ON SCROLL ===================== */
+window.addEventListener('scroll', ()=>{
+  document.getElementById('nav').classList.toggle('solid', window.scrollY > 60);
+});
+
+/* ===================== SCROLL REVEAL ===================== */
+const revealObserver = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      entry.target.classList.add('in-view');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, {threshold:0.12, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>revealObserver.observe(el));
+</script>
+</body>
+</html>
